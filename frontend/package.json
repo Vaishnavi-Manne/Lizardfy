@@ -1,0 +1,25 @@
+{
+  "name": "lizardfy",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "lint": "oxlint src",
+    "start": "next start"
+  },
+  "dependencies": {
+    "lucide-react": "^1.48.0",
+    "next": "^15.5.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "oxlint": "^1.81.0",
+    "typescript": "~6.0.2"
+  }
+}
