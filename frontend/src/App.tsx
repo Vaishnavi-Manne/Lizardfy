@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import {
   ArrowDown,
   ArrowLeft,
@@ -207,9 +208,7 @@ function App() {
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="Lizardfy home"
         >
-          <span className="brand-mark">
-            L<span>.</span>
-          </span>
+          <Image className="brand-mark" src="/logoImg.svg" alt="" width={32} height={32} />
           <span className="brand-name">lizardfy</span>
         </button>
         <nav
@@ -306,7 +305,7 @@ function App() {
         <section className="shop-section section-wrap" id="shop">
           <div className="section-heading shop-heading">
             <div>
-              <span className="eyebrow">Scent for every sort of day</span>
+              <span className="eyebrow">A little light for every moment</span>
               <h2>
                 Find your <em>favourite.</em>
               </h2>
@@ -847,9 +846,7 @@ function App() {
             className="wordmark footer-wordmark"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <span className="brand-mark">
-              L<span>.</span>
-            </span>
+            <Image className="brand-mark" src="/logoImg.svg" alt="" width={32} height={32} />
             <span className="brand-name">lizardfy</span>
           </button>
           <p>
