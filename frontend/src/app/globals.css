@@ -309,13 +309,9 @@ h2 em,
   text-align: left;
 }
 .brand-mark {
-  font-family: var(--serif);
-  font-size: 32px;
-  line-height: 1;
-  letter-spacing: 0;
-}
-.brand-mark span {
-  color: var(--coral);
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 .brand-name {
   font-size: 14px;
@@ -1477,12 +1473,6 @@ h2 em,
   gap: 36px;
   padding-bottom: 37px;
 }
-.footer-wordmark .brand-mark {
-  color: #f2eee2;
-}
-.footer-wordmark .brand-mark span {
-  color: #d78a68;
-}
 .footer-top > p {
   margin: 4px 0 0;
   color: #bec6b9;
@@ -1769,11 +1759,9 @@ h2 em,
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(13px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 @keyframes hero-enter {
@@ -1866,7 +1854,8 @@ h2 em,
     gap: 6px;
   }
   .brand-mark {
-    font-size: 28px;
+    width: 28px;
+    height: 28px;
   }
   .brand-name {
     font-size: 12px;
@@ -1910,7 +1899,6 @@ h2 em,
   .hero {
     height: 610px;
     min-height: 0;
-    max-height: 76svh;
   }
   .hero-image {
     object-position: 58% center;
@@ -1954,9 +1942,12 @@ h2 em,
   .intro-strip {
     min-height: 57px;
     gap: 12px;
-    overflow: hidden;
+    flex-wrap: wrap;
+    overflow: visible;
+    padding: 12px 18px;
     font-size: 11px;
-    white-space: nowrap;
+    line-height: 1.4;
+    text-align: center;
   }
   .intro-strip i {
     font-size: 11px;
@@ -1975,8 +1966,17 @@ h2 em,
   .shop-heading h2 {
     font-size: 39px;
   }
+  .shop-heading {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .shop-heading .eyebrow {
+    white-space: nowrap;
+  }
   .shop-heading > .text-link {
-    margin-top: 24px;
+    align-self: flex-start;
+    margin-top: 14px;
     font-size: 8px;
     white-space: nowrap;
   }
@@ -1990,10 +1990,13 @@ h2 em,
     margin-top: 25px;
   }
   .category-tabs {
-    order: 1;
+    order: 0;
+    flex: 0 0 100%;
     width: 100%;
-    overflow-x: auto;
-    padding-bottom: 2px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    overflow: visible;
   }
   .category-tab {
     flex: 0 0 auto;
