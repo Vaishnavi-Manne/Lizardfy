@@ -16,6 +16,7 @@ export async function GET() {
         email: true,
         name: true,
         role: true,
+        avatar: true,
         createdAt: true,
       },
     });
@@ -34,6 +35,7 @@ export async function GET() {
         email: session.email,
         name: session.name,
         role: session.role,
+        avatar: session.avatar ?? null,
       },
     });
   }

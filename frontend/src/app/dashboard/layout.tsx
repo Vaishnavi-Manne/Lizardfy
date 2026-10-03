@@ -19,6 +19,7 @@ interface UserProfile {
   name: string;
   email: string;
   role: "CUSTOMER" | "ADMIN";
+  avatar?: string | null;
 }
 
 export default function DashboardLayout({
@@ -97,7 +98,11 @@ export default function DashboardLayout({
           </Link>
 
           <div className="user-badge">
-            <div className="user-avatar">{user?.name ? user.name.charAt(0) : "U"}</div>
+            {user?.avatar ? (
+              <img src={user.avatar} alt={user.name} className="user-avatar-img" />
+            ) : (
+              <div className="user-avatar">{user?.name ? user.name.charAt(0) : "U"}</div>
+            )}
             <div className="user-details">
               <strong>{user?.name}</strong>
               <small>{user?.email}</small>
@@ -114,7 +119,16 @@ export default function DashboardLayout({
       <div className="dashboard-container">
         <aside className="dashboard-sidebar">
           <div className="sidebar-profile-card">
-            <div className="profile-initial">{user?.name?.charAt(0) || "L"}</div>
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="user-avatar-img"
+                style={{ width: "36px", height: "36px" }}
+              />
+            ) : (
+              <div className="profile-initial">{user?.name?.charAt(0) || "L"}</div>
+            )}
             <div>
               <h3>{user?.name}</h3>
               <span>{user?.role === "ADMIN" ? "Studio Administrator" : "Candle Enthusiast"}</span>

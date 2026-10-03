@@ -3,21 +3,50 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, Lock, Mail, Sparkles, UserCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lock, Mail } from "lucide-react";
+import GoogleAuthButton from "../GoogleAuthButton";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") || "";
+  const errorParam = searchParams.get("error") || "";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
+
+  const getParamErrorMessage = (code: string): string => {
+    switch (code) {
+      case "google_not_configured":
+        return "Google OAuth credentials are not configured yet. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in frontend/.env.";
+      case "google_cancelled":
+        return "Google sign-in was cancelled.";
+      case "google_auth_failed":
+        return "Google sign-in could not be completed. Please try again.";
+      case "token_exchange_failed":
+        return "Unable to verify credentials with Google. Please check your setup.";
+      case "profile_fetch_failed":
+        return "Could not retrieve your profile from Google.";
+      case "invalid_state":
+        return "Security token validation failed (state mismatch). Please try again.";
+      case "state_expired":
+        return "Google sign-in session expired. Please try again.";
+      case "missing_code":
+        return "Authorization code missing from Google response.";
+      case "unauthorized":
+        return "You need administrative privileges to view that area.";
+      default:
+        return code ? "Authentication error occurred. Please try again." : "";
+    }
+  };
+
+  const displayError = formError || getParamErrorMessage(errorParam);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setFormError("");
     setLoading(true);
 
     try {
@@ -30,7 +59,7 @@ function LoginForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Failed to sign in. Please check your credentials.");
+        setFormError(data.error || "Failed to sign in. Please check your credentials.");
         setLoading(false);
         return;
       }
@@ -39,20 +68,9 @@ function LoginForm() {
       router.push(target);
       router.refresh();
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setFormError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }
-  };
-
-  const fillDemo = (role: "admin" | "customer") => {
-    if (role === "admin") {
-      setEmail("admin@lizardfy.com");
-      setPassword("Admin@123456");
-    } else {
-      setEmail("maya@example.com");
-      setPassword("Customer@123456");
-    }
-    setError("");
   };
 
   return (
@@ -74,7 +92,28 @@ function LoginForm() {
         <p>Sign in to view your orders, saved candles, and personal creations.</p>
       </div>
 
-      {error && <div className="auth-alert error">{error}</div>}
+      {displayError && <div className="auth-alert error">{displayError}</div>}
+
+      {errorParam === "google_not_configured" && (
+        <div className="google-config-help">
+          <strong>Configuring Google OAuth:</strong>
+          <br />
+          1. Create an OAuth 2.0 Client in Google Cloud Console.
+          <br />
+          2. Set redirect URI: <code>http://localhost:3000/api/auth/google/callback</code>
+          <br />
+          3. Add <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> to <code>frontend/.env</code>.
+        </div>
+      )}
+
+      {/* Google OAuth Continue Button */}
+      <div style={{ marginTop: "16px" }}>
+        <GoogleAuthButton redirect={redirect} label="Continue with Google" />
+      </div>
+
+      <div className="auth-divider">
+        <span>or continue with email</span>
+      </div>
 
       <form onSubmit={handleLogin} className="auth-form">
         <label>
@@ -109,28 +148,6 @@ function LoginForm() {
           {loading ? "Signing in..." : "Sign in to account"} <ArrowRight size={16} />
         </button>
       </form>
-
-      <div className="demo-credentials-box">
-        <span className="demo-title">
-          <Sparkles size={14} /> Quick Demo Access
-        </span>
-        <div className="demo-buttons">
-          <button
-            type="button"
-            onClick={() => fillDemo("customer")}
-            className="demo-btn"
-          >
-            <UserCheck size={14} /> Fill Customer (Maya)
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemo("admin")}
-            className="demo-btn admin-demo"
-          >
-            <Lock size={14} /> Fill Merchant Admin
-          </button>
-        </div>
-      </div>
 
       <div className="auth-footer">
         <p>

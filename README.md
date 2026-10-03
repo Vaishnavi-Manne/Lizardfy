@@ -1,36 +1,23 @@
 # Lizardfy
 
-Lizardfy is a candle storefront made for moment
+Lizardfy is a modern, artisanal candle storefront and studio dashboard built with Next.js.
 
 ## Stack
 
-- Next.js 15 App Router, React 19, and TypeScript
-- Responsive CSS styling and Lucide React icons
-- Native Node.js HTTP API
-- Local candle images and hero video assets
-- Browser localStorage for demo cart and saved-candle state
+- **Framework**: Next.js 15 App Router, React 19, TypeScript
+- **Styling**: Vanilla responsive CSS & Lucide React icons
+- **Database & ORM**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT session tokens via `jose`, bcrypt password hashing, and Google OAuth 2.0
+- **Assets**: Local candle images and video assets
 
-## Project layout
+## Project Layout
 
-- `frontend/` contains the Next.js storefront.
-- `backend/` contains the Node.js API server.
-- `Images/` contains the source candle images and videos.
+- `frontend/`: The full-stack Next.js web application (storefront, dashboard, admin panel, Prisma ORM, and API routes).
+- `Images/`: Source candle images and videos.
 
-## Run locally
+## Run Locally
 
-Start the API in one terminal from the project root:
-
-```sh
-cd backend
-npm run dev
-```
-
-The API listens on `http://127.0.0.1:3001` and provides:
-
-- `GET /api/health`
-- `GET /api/products`
-
-Start the frontend in a second terminal:
+Navigate into `frontend`:
 
 ```sh
 cd frontend
@@ -38,19 +25,26 @@ npm install
 npm run dev
 ```
 
-Open the URL printed by Next.js, usually `http://localhost:3000`.
+Open `http://localhost:3000` in your browser.
 
-## Checks
+## Google OAuth Setup
 
-From `frontend/`, run:
+1. Create OAuth credentials in [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+2. Set the Authorized Redirect URI to:
+   ```
+   http://localhost:3000/api/auth/google/callback
+   ```
+3. Add your credentials to `frontend/.env`:
+   ```env
+   GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+   GOOGLE_CLIENT_SECRET="your-client-secret"
+   ```
+
+## Checks & Verification
+
+From `frontend/`:
 
 ```sh
 npm run build
 npm run lint
 ```
-
-The backend uses only Node.js built-in modules and has no dependency installation step.
-
-## Current limitations
-
-The product list and checkout are demo functionality. Payments, order persistence, authentication, file storage, fulfillment, and production database integrations are not connected yet.

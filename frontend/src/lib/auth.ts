@@ -15,6 +15,7 @@ export interface UserPayload {
   email: string;
   name: string;
   role: UserRole;
+  avatar?: string | null;
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -42,6 +43,7 @@ export async function verifyToken(token: string): Promise<UserPayload | null> {
       email: payload.email as string,
       name: payload.name as string,
       role: payload.role as UserRole,
+      avatar: (payload.avatar as string) || null,
     };
   } catch {
     return null;
