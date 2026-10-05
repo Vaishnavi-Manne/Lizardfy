@@ -10,7 +10,6 @@ import {
   Heart,
   ShoppingBag,
   User,
-  Sparkles,
   ArrowRight,
   Flame,
 } from "lucide-react";

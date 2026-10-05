@@ -10,7 +10,6 @@ import {
   ChevronDown,
   Flame,
   Heart,
-  Menu,
   Minus,
   Plus,
   Search,
@@ -18,12 +17,12 @@ import {
   SlidersHorizontal,
   Sparkles,
   Trash2,
-  User,
   X,
 } from "lucide-react";
 
 import { ALL_PRODUCTS, Product } from "@/lib/products";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 type CartLine = {
   id: string;
@@ -57,7 +56,6 @@ function App() {
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartLine[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [storageReady, setStorageReady] = useState(false);
   const [jar, setJar] = useState("Amber glass");
@@ -70,12 +68,6 @@ function App() {
   const [complete, setComplete] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState(false);
   const [sort, setSort] = useState("Featured");
-  const [currentUser, setCurrentUser] = useState<{
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  } | null>(null);
 
   // Checkout form fields
   const [formName, setFormName] = useState("");
@@ -92,7 +84,6 @@ function App() {
       .then((res) => res.json())
       .then((data) => {
         if (data.authenticated && data.user) {
-          setCurrentUser(data.user);
           setFormName(data.user.name || "");
           setFormEmail(data.user.email || "");
         }
@@ -147,7 +138,6 @@ function App() {
     (size === "300g" ? 300 : size === "200g" ? 100 : 0) +
     extras.length * 90;
   const goTo = (id: string) => {
-    setMobileOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
   const addToCart = (line: Omit<CartLine, "quantity">) => {
@@ -303,7 +293,7 @@ function App() {
             </label>
           </div>
           <div className="product-grid">
-            {visibleProducts.map((product, index) => (
+            {visibleProducts.slice(0, 4).map((product, index) => (
               <article
                 className="product-card"
                 key={product.id}
@@ -391,6 +381,13 @@ function App() {
                 </button>
               </div>
             )}
+          </div>
+
+          <div className="explore-more-wrap">
+            <Link href="/products" className="explore-more-btn">
+              <span>Explore More Products</span>
+              <ArrowRight size={18} />
+            </Link>
           </div>
         </section>
 
@@ -781,45 +778,7 @@ function App() {
         </section>
       </main>
 
-      <footer className="site-footer">
-        <div className="footer-top">
-          <button
-            className="wordmark footer-wordmark"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          >
-            <img
-              src="/assets/app_logo.jpg"
-              alt="Lizardfy"
-              className="brand-logo"
-            />
-            <span className="brand-name">lizardfy</span>
-          </button>
-          <p>
-            Light a little light.
-            <br />
-            Make room for your moment.
-          </p>
-          <div className="footer-links">
-            <Link href="/products" style={{ textDecoration: "none", color: "inherit" }}>Shop all</Link>
-            <button onClick={() => goTo("customize")}>Custom candles</button>
-            <button onClick={() => goTo("bulk")}>Bulk & gifting</button>
-            <a href="mailto:hello@lizardfy.in">Get in touch</a>
-          </div>
-          <div className="footer-links">
-            <a href="mailto:hello@lizardfy.in">Instagram ↗</a>
-            <button onClick={() => goTo("story")}>Our story</button>
-            <button onClick={() => goTo("shop")}>Shipping & returns</button>
-            <button onClick={() => goTo("shop")}>FAQs</button>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>© 2026 Lizardfy Studio</span>
-          <span>
-            Poured slowly in India <i>✳</i>
-          </span>
-          <span>Plant wax · Thoughtful fragrance · Made by hand</span>
-        </div>
-      </footer>
+      <Footer />
       <div className="mobile-bottom-bar">
         <button onClick={() => goTo("shop")}>
           <Search size={18} />

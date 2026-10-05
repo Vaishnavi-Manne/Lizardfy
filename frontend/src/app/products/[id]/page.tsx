@@ -2,9 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   ArrowRight,
   Check,
   Flame,
@@ -12,15 +10,14 @@ import {
   Minus,
   Package,
   Plus,
-  Shield,
   ShoppingBag,
   Sparkles,
   Trash2,
-  User,
   X,
 } from "lucide-react";
 import { ALL_PRODUCTS, Product } from "@/lib/products";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 type CartLine = {
   id: string;
@@ -37,7 +34,6 @@ export default function SingleProductPage({
   params: Promise<{ id: string }>;
 }) {
   const resolvedParams = use(params);
-  const router = useRouter();
   const productId = resolvedParams.id;
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -472,34 +468,7 @@ export default function SingleProductPage({
       )}
 
       {/* Footer */}
-      <footer className="site-footer">
-        <div className="footer-top">
-          <Link href="/" className="wordmark footer-wordmark">
-            <img src="/assets/app_logo.jpg" alt="Lizardfy" className="brand-logo" />
-            <span className="brand-name">lizardfy</span>
-          </Link>
-          <p>
-            Light a little light.
-            <br />
-            Make room for your moment.
-          </p>
-          <div className="footer-links">
-            <Link href="/products">All candles</Link>
-            <Link href="/#customize">Custom candle studio</Link>
-            <Link href="/#bulk">Gatherings & gifting</Link>
-            <a href="mailto:hello@lizardfy.in">hello@lizardfy.in</a>
-          </div>
-          <div className="footer-links">
-            <Link href="/dashboard">Studio member login</Link>
-            <Link href="/dashboard/admin">Admin portal</Link>
-            <span>Hand-poured with love in India</span>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>© 2026 Lizardfy Studio. All rights reserved.</span>
-          <span>Slow-crafted artisanal candles</span>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

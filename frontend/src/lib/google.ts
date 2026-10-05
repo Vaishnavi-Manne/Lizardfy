@@ -16,8 +16,16 @@ export function isGoogleOAuthConfigured(): boolean {
 }
 
 export function getGoogleRedirectUri(req: Request): string {
+  // If deployed on Vercel, prioritize production domain
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/api/auth/google/callback`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}/api/auth/google/callback`;
+  }
+
   const customAppUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL;
-  if (customAppUrl) {
+  if (customAppUrl && (!customAppUrl.includes("localhost") || process.env.NODE_ENV !== "production")) {
     return `${customAppUrl.replace(/\/$/, "")}/api/auth/google/callback`;
   }
 

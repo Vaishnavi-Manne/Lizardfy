@@ -3,28 +3,23 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowDown,
-  ArrowLeft,
   ArrowRight,
   Check,
   ChevronDown,
   Eye,
-  Filter,
   Flame,
   Heart,
-  Menu,
   Minus,
   Plus,
   Search,
   ShoppingBag,
-  SlidersHorizontal,
   Sparkles,
   Trash2,
-  User,
   X,
 } from "lucide-react";
 import { ALL_PRODUCTS, Product } from "@/lib/products";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 type CartLine = {
   id: string;
@@ -37,13 +32,11 @@ type CartLine = {
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>(ALL_PRODUCTS);
-  const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("All candles");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("Featured");
   const [cart, setCart] = useState<CartLine[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [addedAlert, setAddedAlert] = useState<string | null>(null);
@@ -72,8 +65,6 @@ export default function ProductsPage() {
         }
       } catch (err) {
         console.error("Error fetching products:", err);
-      } finally {
-        setLoading(false);
       }
     }
     fetchProducts();
@@ -587,34 +578,7 @@ export default function ProductsPage() {
       )}
 
       {/* Footer */}
-      <footer className="site-footer">
-        <div className="footer-top">
-          <Link href="/" className="wordmark footer-wordmark">
-            <img src="/assets/app_logo.jpg" alt="Lizardfy" className="brand-logo" />
-            <span className="brand-name">lizardfy</span>
-          </Link>
-          <p>
-            Light a little light.
-            <br />
-            Make room for your moment.
-          </p>
-          <div className="footer-links">
-            <Link href="/products">All candles</Link>
-            <Link href="/#customize">Custom candle studio</Link>
-            <Link href="/#bulk">Gatherings & gifting</Link>
-            <a href="mailto:hello@lizardfy.in">hello@lizardfy.in</a>
-          </div>
-          <div className="footer-links">
-            <Link href="/dashboard">Studio member login</Link>
-            <Link href="/dashboard/admin">Admin portal</Link>
-            <span>Hand-poured with love in India</span>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>© 2026 Lizardfy Studio. All rights reserved.</span>
-          <span>Slow-crafted artisanal candles</span>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
