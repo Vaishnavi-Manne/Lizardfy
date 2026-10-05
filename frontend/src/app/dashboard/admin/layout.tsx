@@ -7,10 +7,12 @@ import {
   BarChart3,
   Flame,
   LogOut,
+  Menu,
   PackageCheck,
   Shield,
   Store,
   UserCheck,
+  X,
 } from "lucide-react";
 
 interface AdminUser {
@@ -29,6 +31,7 @@ export default function AdminDashboardLayout({
   const router = useRouter();
   const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     async function checkAdmin() {
@@ -53,6 +56,10 @@ export default function AdminDashboardLayout({
     checkAdmin();
   }, [router]);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
@@ -76,33 +83,45 @@ export default function AdminDashboardLayout({
 
   return (
     <div className="dashboard-shell admin-shell">
+      {/* Admin Top Navigation */}
       <header className="dashboard-topbar admin-topbar">
         <div className="dashboard-brand-wrap">
+          <button
+            type="button"
+            className="mobile-nav-toggle admin-mobile-toggle"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle admin navigation menu"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+
           <Link href="/" className="wordmark">
-            <span className="brand-mark admin-mark">
-              L<span>.</span>
-            </span>
+            <img
+              src="/assets/app_logo.jpg"
+              alt="Lizardfy"
+              className="brand-logo"
+            />
             <span className="brand-name">lizardfy</span>
           </Link>
           <span className="dashboard-tag admin-tag">
-            <Shield size={12} /> Studio Merchant Admin
+            <Shield size={12} /> Studio Operations
           </span>
         </div>
 
         <div className="dashboard-top-actions">
           <Link href="/dashboard" className="topbar-store-link">
-            <UserCheck size={15} /> Customer View
+            <UserCheck size={15} /> <span>Customer View</span>
           </Link>
 
           <Link href="/" className="topbar-store-link">
-            <Store size={15} /> Storefront
+            <Store size={15} /> <span>Storefront</span>
           </Link>
 
           <div className="user-badge admin-badge">
             <div className="user-avatar admin-avatar">{admin?.name?.charAt(0) || "A"}</div>
             <div className="user-details">
               <strong>{admin?.name}</strong>
-              <small>Administrator</small>
+              <small>Studio Administrator</small>
             </div>
           </div>
 
@@ -113,19 +132,28 @@ export default function AdminDashboardLayout({
         </div>
       </header>
 
+      {/* Mobile Drawer Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="dashboard-mobile-overlay"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       <div className="dashboard-container">
-        <aside className="dashboard-sidebar admin-sidebar">
+        <aside className={`dashboard-sidebar admin-sidebar ${mobileMenuOpen ? "mobile-open" : ""}`}>
           <div className="sidebar-profile-card admin-card">
             <div className="profile-initial admin-initial">
               <Shield size={20} />
             </div>
-            <div>
+            <div className="profile-meta">
               <h3>{admin?.name}</h3>
-              <span>Merchant Admin</span>
+              <span className="profile-role">Executive Admin</span>
             </div>
           </div>
 
           <nav className="dashboard-nav">
+            <span className="nav-group-title">Operations Console</span>
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -134,17 +162,22 @@ export default function AdminDashboardLayout({
                   key={item.href}
                   href={item.href}
                   className={isActive ? "dashboard-nav-item active admin-active" : "dashboard-nav-item"}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Icon size={18} />
+                  <Icon size={18} className="nav-icon" />
                   <span>{item.label}</span>
+                  {isActive && <span className="nav-active-pill admin-pill" />}
                 </Link>
               );
             })}
           </nav>
 
           <div className="sidebar-studio-cta admin-ops-box">
-            <h4>Live Storefront Status</h4>
-            <p>Order sync active. PostgreSQL database ready.</p>
+            <div className="ops-pulse-row">
+              <span className="live-pulse-dot" />
+              <strong>Live Database Sync</strong>
+            </div>
+            <p>PostgreSQL schema connected. Real-time fulfillment active.</p>
           </div>
         </aside>
 

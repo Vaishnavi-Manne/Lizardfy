@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ALL_PRODUCTS } from "@/lib/products";
 
 export async function GET() {
   try {
@@ -8,52 +9,12 @@ export async function GET() {
       where: { isArchived: false },
       orderBy: { createdAt: "asc" },
     });
-    return NextResponse.json({ products });
+    return NextResponse.json({ products: products.length > 0 ? products : ALL_PRODUCTS });
   } catch (error) {
     console.error("Products error:", error);
     // Return standard fallback products if DB not yet migrated
     return NextResponse.json({
-      products: [
-        {
-          id: "slow-morning",
-          name: "Slow Morning",
-          scent: "Oat milk · honey · cedar",
-          price: 890,
-          category: "For unwinding",
-          image: "/assets/candles1.png",
-          color: "#d8a46d",
-          badge: "Bestseller",
-        },
-        {
-          id: "fig-and-fern",
-          name: "Fig & Fern",
-          scent: "Green fig · moss · vetiver",
-          price: 990,
-          category: "For the home",
-          image: "/assets/candles2.png",
-          color: "#66755a",
-          badge: "New",
-        },
-        {
-          id: "rose-hour",
-          name: "Rose Hour",
-          scent: "Damask rose · pink pepper",
-          price: 890,
-          category: "For gifting",
-          image: "/assets/candles3.png",
-          color: "#bc7169",
-        },
-        {
-          id: "after-rain",
-          name: "After Rain",
-          scent: "Petrichor · eucalyptus · oak",
-          price: 1090,
-          category: "For unwinding",
-          image: "/assets/candles4.png",
-          color: "#799493",
-          badge: "Small batch",
-        },
-      ],
+      products: ALL_PRODUCTS,
     });
   }
 }
