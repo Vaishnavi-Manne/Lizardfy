@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   ArrowDown,
   ArrowLeft,
@@ -217,7 +218,7 @@ function App() {
         >
           <button onClick={() => goTo("shop")}>Shop</button>
           <button onClick={() => goTo("customize")}>Make it yours</button>
-          <button onClick={() => goTo("story")}>Our story</button>
+          <Link href="/our-story" className="nav-link">Our story</Link>
           <button onClick={() => goTo("bulk")}>Gatherings & gifts</button>
         </nav>
         <div className="header-actions">
@@ -752,9 +753,9 @@ function App() {
               factory line. Just good ingredients, warm hands and a reason to
               pause.
             </p>
-            <button className="text-link" onClick={() => goTo("bulk")}>
+            <Link href="/our-story" className="text-link">
               A little more about us <ArrowRight size={16} />
-            </button>
+            </Link>
             <span className="signature">
               With warmth, <em>Team Lizardfy</em>
             </span>
