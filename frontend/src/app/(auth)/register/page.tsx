@@ -90,9 +90,11 @@ function RegisterForm() {
 
       <div className="auth-header">
         <div className="auth-brand">
-          <span className="brand-mark">
-            L<span>.</span>
-          </span>
+          <img
+            src="/assets/app_logo_cutout.png"
+            alt="Lizardfy"
+            className="brand-logo"
+          />
           <span className="brand-name">lizardfy</span>
         </div>
         <h1>

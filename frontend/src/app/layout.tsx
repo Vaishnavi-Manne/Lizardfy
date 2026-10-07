@@ -5,7 +5,10 @@ export const metadata: Metadata = {
   title: "Lizardfy | Candles for your moment",
   description:
     "Made to feel like they were always yours. Create a custom candle with Lizardfy.",
-  icons: { icon: "/logoImg.svg" },
+  icons: {
+    icon: "/assets/app_logo_cutout.png",
+    apple: "/assets/app_logo_cutout.png",
+  },
 };
 
 export default function RootLayout({

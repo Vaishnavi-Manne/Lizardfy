@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, Lock, Mail } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lock, Mail, Sparkles } from "lucide-react";
 import GoogleAuthButton from "../GoogleAuthButton";
 
 function LoginForm() {
@@ -81,15 +81,48 @@ function LoginForm() {
 
       <div className="auth-header">
         <div className="auth-brand">
-          <span className="brand-mark">
-            L<span>.</span>
-          </span>
+          <img
+            src="/assets/app_logo_cutout.png"
+            alt="Lizardfy"
+            className="brand-logo"
+          />
           <span className="brand-name">lizardfy</span>
         </div>
         <h1>
           Welcome back to <em>the studio.</em>
         </h1>
         <p>Sign in to view your orders, saved candles, and personal creations.</p>
+      </div>
+
+      {/* Quick Demo Access Box for instant previewing/testing */}
+      <div className="demo-credentials-box">
+        <span className="demo-box-title">
+          <Sparkles size={13} /> 1-Click Demo Credentials:
+        </span>
+        <div className="demo-buttons-row">
+          <button
+            type="button"
+            className="demo-pill-btn"
+            onClick={() => {
+              setEmail("admin@lizardfy.com");
+              setPassword("Admin@123456");
+            }}
+          >
+            <strong>Studio Admin</strong>
+            <small>admin@lizardfy.com</small>
+          </button>
+          <button
+            type="button"
+            className="demo-pill-btn"
+            onClick={() => {
+              setEmail("maya@example.com");
+              setPassword("Customer@123456");
+            }}
+          >
+            <strong>Customer Member</strong>
+            <small>maya@example.com</small>
+          </button>
+        </div>
       </div>
 
       {displayError && <div className="auth-alert error">{displayError}</div>}

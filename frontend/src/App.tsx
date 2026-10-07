@@ -9,8 +9,8 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  Flame,
   Heart,
-  Menu,
   Minus,
   Plus,
   Search,
@@ -18,20 +18,13 @@ import {
   SlidersHorizontal,
   Sparkles,
   Trash2,
-  User,
   X,
 } from "lucide-react";
 
-type Product = {
-  id: string;
-  name: string;
-  scent: string;
-  price: number;
-  category: string;
-  image: string;
-  color: string;
-  badge?: string;
-};
+import { ALL_PRODUCTS, Product } from "@/lib/products";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+
 type CartLine = {
   id: string;
   name: string;
@@ -41,47 +34,7 @@ type CartLine = {
   image?: string;
 };
 
-const products: Product[] = [
-  {
-    id: "slow-morning",
-    name: "Slow Morning",
-    scent: "Oat milk · honey · cedar",
-    price: 890,
-    category: "For unwinding",
-    image: "/assets/candles1.png",
-    color: "#d8a46d",
-    badge: "Bestseller",
-  },
-  {
-    id: "fig-and-fern",
-    name: "Fig & Fern",
-    scent: "Green fig · moss · vetiver",
-    price: 990,
-    category: "For the home",
-    image: "/assets/candles2.png",
-    color: "#66755a",
-    badge: "New",
-  },
-  {
-    id: "rose-hour",
-    name: "Rose Hour",
-    scent: "Damask rose · pink pepper",
-    price: 890,
-    category: "For gifting",
-    image: "/assets/candles3.png",
-    color: "#bc7169",
-  },
-  {
-    id: "after-rain",
-    name: "After Rain",
-    scent: "Petrichor · eucalyptus · oak",
-    price: 1090,
-    category: "For unwinding",
-    image: "/assets/candles4.png",
-    color: "#799493",
-    badge: "Small batch",
-  },
-];
+const products: Product[] = ALL_PRODUCTS;
 const photo = (id: string, width = 900) =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=85`;
 const readSavedIds = () => {
@@ -104,7 +57,6 @@ function App() {
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartLine[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [storageReady, setStorageReady] = useState(false);
   const [jar, setJar] = useState("Amber glass");
@@ -117,12 +69,6 @@ function App() {
   const [complete, setComplete] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState(false);
   const [sort, setSort] = useState("Featured");
-  const [currentUser, setCurrentUser] = useState<{
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  } | null>(null);
 
   // Checkout form fields
   const [formName, setFormName] = useState("");
@@ -139,7 +85,6 @@ function App() {
       .then((res) => res.json())
       .then((data) => {
         if (data.authenticated && data.user) {
-          setCurrentUser(data.user);
           setFormName(data.user.name || "");
           setFormEmail(data.user.email || "");
         }
@@ -194,7 +139,6 @@ function App() {
     (size === "300g" ? 300 : size === "200g" ? 100 : 0) +
     extras.length * 90;
   const goTo = (id: string) => {
-    setMobileOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
   const addToCart = (line: Omit<CartLine, "quantity">) => {
@@ -222,93 +166,24 @@ function App() {
 
   return (
     <>
-      <div className="announcement">
-        A little light, made by hand <span>·</span> Free shipping on orders over
-        ₹1,800
-      </div>
-      <header className="site-header">
-        <button
-          className="icon-button mobile-menu"
-          aria-label="Open menu"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? <X /> : <Menu />}
-        </button>
-        <button
-          className="wordmark"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          aria-label="Lizardfy home"
-        >
-          <Image className="brand-mark" src="/logoImg.svg" alt="" width={32} height={32} />
-          <span className="brand-name">lizardfy</span>
-        </button>
-        <nav
-          className={mobileOpen ? "main-nav open" : "main-nav"}
-          aria-label="Main navigation"
-        >
-          <button onClick={() => goTo("shop")}>Shop</button>
-          <button onClick={() => goTo("customize")}>Make it yours</button>
-          <Link href="/our-story" className="nav-link">Our story</Link>
-          <button onClick={() => goTo("bulk")}>Gatherings & gifts</button>
-        </nav>
-        <div className="header-actions">
-          <button
-            className="icon-button search-trigger"
-            aria-label="Search candles"
-            onClick={() => {
-              goTo("shop");
-              document.getElementById("product-search")?.focus();
-            }}
-          >
-            <Search />
-          </button>
-          <button
-            className="icon-button favorite-trigger"
-            aria-label="Saved candles"
-            onClick={() => goTo("shop")}
-          >
-            <Heart />
-          </button>
-          <button
-            className="bag-button"
-            onClick={() => setCartOpen(true)}
-            aria-label={`Shopping bag, ${count} items`}
-          >
-            <ShoppingBag />
-            <span>Bag</span>
-            <b>{count}</b>
-          </button>
-          {currentUser ? (
-            <Link
-              href={currentUser.role === "ADMIN" ? "/dashboard/admin" : "/dashboard"}
-              className="user-auth-btn"
-              title="Open your studio account"
-            >
-              <User size={13} />
-              <span>{currentUser.role === "ADMIN" ? "Admin" : currentUser.name.split(" ")[0]}</span>
-            </Link>
-          ) : (
-            <Link href="/login" className="user-auth-btn" title="Sign in or register">
-              <User size={13} />
-              <span>Sign in</span>
-            </Link>
-          )}
-        </div>
-      </header>
+      <Navbar
+        cartCount={count}
+        onOpenCart={() => setCartOpen(true)}
+        favoritesCount={favorites.length}
+        activePath="/"
+        onSelectFavoriteFilter={() => {
+          goTo("shop");
+        }}
+      />
 
       <main>
         <section className="hero">
-          <video
+          <img
+            src="/assets/hero-candle.jpg"
+            alt="Handcrafted luxury candles glowing softly in a warm, cozy room"
             className="hero-image"
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster="/assets/hero.png"
-            aria-label="Candle glowing softly in an intimate, warm room"
-          >
-            <source src="/candleVideo.mp4" type="video/mp4" />
-          </video>
+            loading="eager"
+          />
           <div className="hero-shade" />
           <div className="hero-copy">
             <span className="eyebrow light-eyebrow">
@@ -337,15 +212,28 @@ function App() {
                 Create a custom candle <ArrowDown size={15} />
               </button>
             </div>
+            <div className="hero-pills">
+              <span className="hero-pill">
+                <Sparkles size={13} /> 100% Plant Wax
+              </span>
+              <span className="hero-pill">
+                <Heart size={13} /> Poured by Hand in India
+              </span>
+              <span className="hero-pill">
+                <Flame size={13} /> Non-Toxic Clean Burn
+              </span>
+            </div>
           </div>
           <span className="hero-side-note">LIGHT A LITTLE LIGHT</span>
         </section>
         <section className="intro-strip">
           <span>Made for the in-between</span>
-          <i>✳</i>
-          <span>100% plant-based wax</span>
-          <i>✳</i>
+          <i>✦</i>
+          <span>100% plant-based soy wax</span>
+          <i>✦</i>
           <span>Poured by hand in India</span>
+          <i>✦</i>
+          <span>Clean burns & phthalate-free</span>
         </section>
 
         <section className="shop-section section-wrap" id="shop">
@@ -356,15 +244,9 @@ function App() {
                 Find your <em>favourite.</em>
               </h2>
             </div>
-            <button
-              className="text-link"
-              onClick={() => {
-                setCategory("All candles");
-                setSearch("");
-              }}
-            >
+            <Link href="/products" className="text-link">
               Explore all candles <ArrowRight size={16} />
-            </button>
+            </Link>
           </div>
           <div className="shop-controls">
             <div
@@ -412,7 +294,7 @@ function App() {
             </label>
           </div>
           <div className="product-grid">
-            {visibleProducts.map((product, index) => (
+            {visibleProducts.slice(0, 4).map((product, index) => (
               <article
                 className="product-card"
                 key={product.id}
@@ -470,7 +352,11 @@ function App() {
                 </div>
                 <div className="product-info">
                   <div>
-                    <h3>{product.name}</h3>
+                    <h3>
+                      <Link href={`/products/${product.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                        {product.name}
+                      </Link>
+                    </h3>
                     <p>{product.scent}</p>
                   </div>
                   <span>₹{product.price.toLocaleString("en-IN")}</span>
@@ -496,6 +382,13 @@ function App() {
                 </button>
               </div>
             )}
+          </div>
+
+          <div className="explore-more-wrap">
+            <Link href="/products" className="explore-more-btn">
+              <span>Explore More Products</span>
+              <ArrowRight size={18} />
+            </Link>
           </div>
         </section>
 
@@ -886,41 +779,7 @@ function App() {
         </section>
       </main>
 
-      <footer className="site-footer">
-        <div className="footer-top">
-          <button
-            className="wordmark footer-wordmark"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          >
-            <Image className="brand-mark" src="/logoImg.svg" alt="" width={32} height={32} />
-            <span className="brand-name">lizardfy</span>
-          </button>
-          <p>
-            Light a little light.
-            <br />
-            Make room for your moment.
-          </p>
-          <div className="footer-links">
-            <button onClick={() => goTo("shop")}>Shop all</button>
-            <button onClick={() => goTo("customize")}>Custom candles</button>
-            <button onClick={() => goTo("bulk")}>Bulk & gifting</button>
-            <a href="mailto:hello@lizardfy.in">Get in touch</a>
-          </div>
-          <div className="footer-links">
-            <a href="mailto:hello@lizardfy.in">Instagram ↗</a>
-            <button onClick={() => goTo("story")}>Our story</button>
-            <button onClick={() => goTo("shop")}>Shipping & returns</button>
-            <button onClick={() => goTo("shop")}>FAQs</button>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>© 2026 Lizardfy Studio</span>
-          <span>
-            Poured slowly in India <i>✳</i>
-          </span>
-          <span>Plant wax · Thoughtful fragrance · Made by hand</span>
-        </div>
-      </footer>
+      <Footer />
       <div className="mobile-bottom-bar">
         <button onClick={() => goTo("shop")}>
           <Search size={18} />
