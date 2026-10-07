@@ -95,7 +95,7 @@ export default function AdminDashboardLayout({
 
             <Link href="/" className="wordmark">
               <img
-                src="/assets/app_logo.jpg"
+                src="/assets/app_logo_cutout.png"
                 alt="Lizardfy"
                 className="brand-logo"
               />

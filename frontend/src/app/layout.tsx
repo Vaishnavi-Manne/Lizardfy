@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   description:
     "Made to feel like they were always yours. Create a custom candle with Lizardfy.",
   icons: {
-    icon: "/assets/app_logo.jpg",
-    apple: "/assets/app_logo.jpg",
+    icon: "/assets/app_logo_cutout.png",
+    apple: "/assets/app_logo_cutout.png",
   },
 };
 

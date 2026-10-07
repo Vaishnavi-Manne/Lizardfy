@@ -102,7 +102,7 @@ export default function Footer() {
           <div className="footer-col footer-col-brand">
             <Link href="/" className="footer-brand-lockup">
               <img
-                src="/assets/app_logo.jpg"
+                src="/assets/app_logo_cutout.png"
                 alt="Lizardfy Logo"
                 className="footer-brand-logo"
               />
@@ -211,11 +211,7 @@ export default function Footer() {
             <h4 className="footer-col-title">The Atelier</h4>
             <ul className="footer-nav-list">
               <li>
-                <Link
-                  href="/#story"
-                  onClick={(e) => handleNavClick("story", e)}
-                  className="footer-nav-item"
-                >
+                <Link href="/our-story" className="footer-nav-item">
                   Our Slower Story
                 </Link>
               </li>

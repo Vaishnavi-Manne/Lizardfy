@@ -154,7 +154,7 @@ export default function Navbar({
         {/* Brand Wordmark & Logo */}
         <Link href="/" className="wordmark" aria-label="Lizardfy Home">
           <img
-            src="/assets/app_logo.jpg"
+            src="/assets/app_logo_cutout.png"
             alt="Lizardfy Candle Studio"
             className="brand-logo"
           />
@@ -185,18 +185,9 @@ export default function Navbar({
           >
             <span>Make It Yours</span>
           </a>
-          <a
-            href="/#story"
-            onClick={(e) => {
-              if (window.location.pathname === "/") {
-                e.preventDefault();
-                handleNavClick("/#story");
-              }
-            }}
-            className="nav-link"
-          >
+          <Link href="/our-story" className="nav-link">
             <span>Our Story</span>
-          </a>
+          </Link>
           <a
             href="/#bulk"
             onClick={(e) => {
@@ -305,7 +296,7 @@ export default function Navbar({
           <div className="mobile-nav-header">
             <div className="wordmark">
               <img
-                src="/assets/app_logo.jpg"
+                src="/assets/app_logo_cutout.png"
                 alt="Lizardfy"
                 className="brand-logo"
               />
@@ -365,14 +356,14 @@ export default function Navbar({
               </div>
               <ArrowRight size={15} />
             </a>
-            <a
-              href="/#story"
-              onClick={() => handleNavClick("/#story")}
+            <Link
+              href="/our-story"
+              onClick={() => setMobileOpen(false)}
               className="mobile-link"
             >
               <span>Our Story</span>
               <ArrowRight size={15} />
-            </a>
+            </Link>
             <a
               href="/#bulk"
               onClick={() => handleNavClick("/#bulk")}

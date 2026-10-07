@@ -562,7 +562,7 @@ export default function CustomerDashboardPage() {
             <div className="receipt-modal-header">
               <div className="receipt-brand-row">
                 <img
-                  src="/assets/app_logo.jpg"
+                  src="/assets/app_logo_cutout.png"
                   alt="Lizardfy"
                   className="brand-logo"
                 />
