@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowDown,
@@ -238,9 +239,7 @@ function App() {
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="Lizardfy home"
         >
-          <span className="brand-mark">
-            L<span>.</span>
-          </span>
+          <Image className="brand-mark" src="/logoImg.svg" alt="" width={32} height={32} />
           <span className="brand-name">lizardfy</span>
         </button>
         <nav
@@ -249,7 +248,7 @@ function App() {
         >
           <button onClick={() => goTo("shop")}>Shop</button>
           <button onClick={() => goTo("customize")}>Make it yours</button>
-          <button onClick={() => goTo("story")}>Our story</button>
+          <Link href="/our-story" className="nav-link">Our story</Link>
           <button onClick={() => goTo("bulk")}>Gatherings & gifts</button>
         </nav>
         <div className="header-actions">
@@ -352,7 +351,7 @@ function App() {
         <section className="shop-section section-wrap" id="shop">
           <div className="section-heading shop-heading">
             <div>
-              <span className="eyebrow">Scent for every sort of day</span>
+              <span className="eyebrow">A little light for every moment</span>
               <h2>
                 Find your <em>favourite.</em>
               </h2>
@@ -799,9 +798,9 @@ function App() {
               factory line. Just good ingredients, warm hands and a reason to
               pause.
             </p>
-            <button className="text-link" onClick={() => goTo("bulk")}>
+            <Link href="/our-story" className="text-link">
               A little more about us <ArrowRight size={16} />
-            </button>
+            </Link>
             <span className="signature">
               With warmth, <em>Team Lizardfy</em>
             </span>
@@ -893,9 +892,7 @@ function App() {
             className="wordmark footer-wordmark"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           >
-            <span className="brand-mark">
-              L<span>.</span>
-            </span>
+            <Image className="brand-mark" src="/logoImg.svg" alt="" width={32} height={32} />
             <span className="brand-name">lizardfy</span>
           </button>
           <p>
