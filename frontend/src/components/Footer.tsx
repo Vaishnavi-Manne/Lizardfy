@@ -60,7 +60,7 @@ export default function Footer() {
               <Sparkles size={18} />
             </div>
             <div className="trust-pillar-text">
-              <strong>100% Plant Wax</strong>
+              <strong>100% Soy Wax</strong>
               <span>Clean-burning coconut & soy</span>
             </div>
           </div>
@@ -82,16 +82,6 @@ export default function Footer() {
             <div className="trust-pillar-text">
               <strong>Toxin-Free Fragrances</strong>
               <span>Phthalate-free botanical oils</span>
-            </div>
-          </div>
-
-          <div className="trust-pillar">
-            <div className="trust-pillar-icon">
-              <Package size={18} />
-            </div>
-            <div className="trust-pillar-text">
-              <strong>Plastic-Free Shipping</strong>
-              <span>Conscious, recyclable packaging</span>
             </div>
           </div>
         </div>
@@ -451,7 +441,7 @@ export default function Footer() {
               </div>
               <div className="faq-item">
                 <h4>What wax do you use?</h4>
-                <p>100% pure coconut and soy plant waxes with zero paraffin or petroleum by-products. Non-toxic and safe around pets.</p>
+                <p>100% pure coconut and soy waxes with zero paraffin or petroleum by-products. Non-toxic and safe around pets.</p>
               </div>
               <div className="faq-item">
                 <h4>Can I order custom labels for weddings or events?</h4>

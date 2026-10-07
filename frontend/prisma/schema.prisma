@@ -13,11 +13,22 @@ enum Role {
 }
 
 enum OrderStatus {
+  PENDING_PAYMENT
   PENDING
   CONFIRMED
+  PROCESSING
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED // Retained for future extensibility; does NOT transition current UPI checkouts to PAID
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
 }
 
 model User {
@@ -72,21 +83,27 @@ model Product {
 }
 
 model Order {
-  id              String      @id @default(uuid())
-  orderNumber     String      @unique
-  userId          String?
-  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  totalAmount     Int
-  status          OrderStatus @default(PENDING)
-  paymentMethod   String      @default("UPI")
-  paymentStatus   String      @default("PAID")
-  customerName    String
-  customerEmail   String
-  customerPhone   String
-  shippingAddress String
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  items           OrderItem[]
+  id                  String        @id @default(uuid())
+  orderNumber         String        @unique
+  userId              String?
+  user                User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  totalAmount         Int
+  status              OrderStatus   @default(PENDING_PAYMENT)
+  paymentMethod       String        @default("UPI")
+  paymentStatus       PaymentStatus @default(PENDING)
+  paymentProvider     String        @default("SANDBOX") // "RAZORPAY" | "SANDBOX"
+  paymentEnvironment  String        @default("SANDBOX") // "LIVE" | "TEST" | "SANDBOX"
+  razorpayOrderId     String?       @unique
+  razorpayPaymentId   String?       @unique
+  razorpaySignature   String?
+  paymentExpiresAt    DateTime?
+  customerName        String
+  customerEmail       String
+  customerPhone       String
+  shippingAddress     String
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  items               OrderItem[]
 
   @@map("orders")
 }

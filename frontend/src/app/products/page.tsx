@@ -181,7 +181,7 @@ export default function ProductsPage() {
               <em>enduring aromas.</em>
             </h1>
             <p>
-              Formulated with 100% plant-based soy wax, organic botanical extracts, and natural cotton wicks.
+              Formulated with 100% soy-based soy wax, organic botanical extracts, and natural cotton wicks.
               Discover fragrances tailored for unhurried evenings, quiet mornings, and warm gatherings.
             </p>
             <div className="catalog-hero-tags">
@@ -563,7 +563,7 @@ export default function ProductsPage() {
                   </div>
                   <p>Hand-packed with sustainable honeycomb wrap & plantable paper.</p>
                   <Link
-                    href="/#shop"
+                    href="/checkout"
                     onClick={() => setCartOpen(false)}
                     className="button button-dark checkout-button"
                   >

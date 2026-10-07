@@ -38,6 +38,9 @@ export default function DashboardLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    if (pathname?.startsWith("/dashboard/admin")) {
+      return;
+    }
     async function loadUser() {
       try {
         const res = await fetch("/api/auth/me");
@@ -54,7 +57,12 @@ export default function DashboardLayout({
       }
     }
     loadUser();
-  }, [router]);
+  }, [router, pathname]);
+
+  // If navigating to admin console, immediately render children without duplicating the customer shell
+  if (pathname?.startsWith("/dashboard/admin")) {
+    return <ToastProvider>{children}</ToastProvider>;
+  }
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });

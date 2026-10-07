@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowDown,
   ArrowLeft,
@@ -23,6 +24,14 @@ import {
 import { ALL_PRODUCTS, Product } from "@/lib/products";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { UpiPaymentModal } from "./components/UpiPaymentModal";
+import {
+  getAllIndianStates,
+  getCitiesForState,
+  validateIndianPhone,
+  validateIndianPin,
+  validateIndianStreetAddress,
+} from "@/lib/indiaGeo";
 
 type CartLine = {
   id: string;
@@ -52,6 +61,7 @@ const readSavedIds = () => {
 };
 
 function App() {
+  const router = useRouter();
   const [category, setCategory] = useState("All candles");
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartLine[]>([]);
@@ -62,7 +72,7 @@ function App() {
   const [size, setSize] = useState("200g");
   const [scent, setScent] = useState("Santal & smoke");
   const [wax, setWax] = useState("#d8ad78");
-  const [label, setLabel] = useState("a little moment");
+  const [label, setLabel] = useState("");
   const [extras, setExtras] = useState<string[]>([]);
   const [reference, setReference] = useState("");
   const [complete, setComplete] = useState(false);
@@ -78,6 +88,48 @@ function App() {
   const [formState, setFormState] = useState("");
   const [formPin, setFormPin] = useState("");
   const [formPayment, setFormPayment] = useState("Pay by UPI");
+
+  const allIndianStates = useMemo(() => getAllIndianStates(), []);
+  const indianCitiesForState = useMemo(() => {
+    if (!formState) return [];
+    return getCitiesForState(formState);
+  }, [formState]);
+
+  // Production-Safe UPI Payment States
+  const [upiModalOpen, setUpiModalOpen] = useState(false);
+  const [upiOrderData, setUpiOrderData] = useState<{
+    orderNumber: string;
+    razorpayOrderId: string;
+    amount: number;
+    paymentExpiresAt: string;
+    customerName: string;
+  } | null>(null);
+  const [confirmedOrder, setConfirmedOrder] = useState<any | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof window !== "undefined" && (window as any).Razorpay) {
+        return resolve(true);
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePaymentSuccess = (order: any) => {
+    setConfirmedOrder(order);
+    setCart([]);
+    setUpiModalOpen(false);
+    setCheckoutStep(false);
+    setComplete(true);
+    setCartOpen(true);
+  };
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -133,10 +185,12 @@ function App() {
     (total, line) => total + line.price * line.quantity,
     0,
   );
+  const hasCustomLabel = label.trim().length > 0;
   const customPrice =
     790 +
     (size === "300g" ? 300 : size === "200g" ? 100 : 0) +
-    extras.length * 90;
+    (extras.includes("Gift box") ? 70 : 0) +
+    (hasCustomLabel ? 70 : 0);
   const goTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   };
@@ -213,7 +267,7 @@ function App() {
             </div>
             <div className="hero-pills">
               <span className="hero-pill">
-                <Sparkles size={13} /> 100% Plant Wax
+                <Sparkles size={13} /> 100% Soy Wax
               </span>
               <span className="hero-pill">
                 <Heart size={13} /> Poured by Hand in India
@@ -228,7 +282,7 @@ function App() {
         <section className="intro-strip">
           <span>Made for the in-between</span>
           <i>✦</i>
-          <span>100% plant-based soy wax</span>
+          <span>100% Soy-based soy wax</span>
           <i>✦</i>
           <span>Poured by hand in India</span>
           <i>✦</i>
@@ -361,7 +415,7 @@ function App() {
                   <span>₹{product.price.toLocaleString("en-IN")}</span>
                 </div>
                 <div className="product-bottom">
-                  <i style={{ backgroundColor: product.color }} /> Plant wax{" "}
+                  <i style={{ backgroundColor: product.color }} /> Soy wax{" "}
                   <span>·</span> 40 hr burn
                 </div>
               </article>
@@ -446,23 +500,7 @@ function App() {
                 </fieldset>
                 <fieldset>
                   <legend>
-                    <span>02</span> Pick a size
-                  </legend>
-                  <div className="choice-row">
-                    {["100g", "200g", "300g"].map((item) => (
-                      <button
-                        key={item}
-                        className={size === item ? "choice selected" : "choice"}
-                        onClick={() => setSize(item)}
-                      >
-                        {item}
-                      </button>
-                    ))}
-                  </div>
-                </fieldset>
-                <fieldset>
-                  <legend>
-                    <span>03</span> Choose your scent
+                    <span>02</span> Choose your scent
                   </legend>
                   <select
                     className="full-select"
@@ -478,7 +516,7 @@ function App() {
                 </fieldset>
                 <fieldset>
                   <legend>
-                    <span>04</span> Pick a wax colour
+                    <span>03</span> Pick a wax colour
                   </legend>
                   <div className="swatch-row">
                     {[
@@ -500,42 +538,45 @@ function App() {
                 </fieldset>
                 <fieldset>
                   <legend>
-                    <span>05</span> Add a little extra
+                    <span>04</span> Add a little extra
                   </legend>
                   <div className="extra-row">
-                    {["Dried flowers", "Cotton ribbon", "Gift box"].map(
-                      (extra) => (
-                        <label key={extra} className="extra-choice">
-                          <input
-                            type="checkbox"
-                            checked={extras.includes(extra)}
-                            onChange={() =>
-                              setExtras((current) =>
-                                current.includes(extra)
-                                  ? current.filter((item) => item !== extra)
-                                  : [...current, extra],
-                              )
-                            }
-                          />
-                          <span>{extra}</span>
-                          <b>+₹90</b>
-                        </label>
-                      ),
-                    )}
+                    {["Gift box"].map((extra) => (
+                      <label key={extra} className="extra-choice">
+                        <input
+                          type="checkbox"
+                          checked={extras.includes(extra)}
+                          onChange={() =>
+                            setExtras((current) =>
+                              current.includes(extra)
+                                ? current.filter((item) => item !== extra)
+                                : [...current, extra],
+                            )
+                          }
+                        />
+                        <span>{extra}</span>
+                        <b>+₹70</b>
+                      </label>
+                    ))}
                   </div>
                 </fieldset>
                 <fieldset>
                   <legend>
-                    <span>06</span> Your label, your words
+                    <span>05</span> Your label, your words
                   </legend>
                   <input
                     className="label-input"
                     maxLength={28}
                     value={label}
-                    placeholder="Write a short message"
+                    placeholder="Write a short message (e.g. your little moment)"
                     onChange={(event) => setLabel(event.target.value)}
                   />
-                  <span className="input-hint">Up to 28 characters</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
+                    <span className="input-hint">Up to 28 characters</span>
+                    <span style={{ fontSize: "11px", fontWeight: 600, color: hasCustomLabel ? "var(--gold-hover, #b4832f)" : "var(--muted, #5e6b5a)" }}>
+                      {hasCustomLabel ? "Personalized label (+₹70)" : "Custom text (+₹70)"}
+                    </span>
+                  </div>
                 </fieldset>
                 <label className="upload-reference">
                   <input
@@ -596,9 +637,9 @@ function App() {
                   className="button button-dark preview-add"
                   onClick={() =>
                     addToCart({
-                      id: `custom-${jar}-${size}-${scent}-${wax}-${label}-${extras.join(",")}`,
+                      id: `custom-${jar}-${size}-${scent}-${wax}-${label.trim()}-${extras.join(",")}`,
                       name: "Your custom candle",
-                      details: `${size} ${jar} · ${scent}${label ? ` · “${label}”` : ""}${extras.length ? ` · ${extras.join(", ")}` : ""}`,
+                      details: `${size} ${jar} · ${scent}${label.trim() ? ` · “${label.trim()}” (+₹70)` : ""}${extras.includes("Gift box") ? " · Gift box (+₹70)" : ""}`,
                       price: customPrice,
                     })
                   }
@@ -635,7 +676,7 @@ function App() {
               {
                 n: "02",
                 title: "We pour slowly",
-                desc: "Small batches, clean-burning plant wax.",
+                desc: "Small batches, clean-burning soy wax.",
               },
               {
                 n: "03",
@@ -682,7 +723,7 @@ function App() {
             <p>
               We started with a simple thought: the things we bring into our
               homes should make us feel a little more at home. So we began
-              pouring small-batch candles with plant wax, considered fragrances
+              pouring small-batch candles with Soy wax, considered fragrances
               and room for your own story.
             </p>
             <p>
@@ -837,26 +878,78 @@ function App() {
                 <div className="success-check">
                   <Check />
                 </div>
-                <span className="eyebrow">Order received</span>
+                <span className="eyebrow">
+                  {confirmedOrder?.paymentProvider === "SANDBOX"
+                    ? "Verified Sandbox Order"
+                    : "Order Confirmed & Paid"}
+                </span>
                 <h3>
-                  Your next little moment
+                  {confirmedOrder?.orderNumber
+                    ? `Order ${confirmedOrder.orderNumber}`
+                    : "Your order"}
                   <br />
-                  <em>is on its way.</em>
+                  <em>is verified & confirmed.</em>
                 </h3>
+
+                {confirmedOrder && (
+                  <div
+                    style={{
+                      margin: "1rem 0",
+                      padding: "0.85rem 1.25rem",
+                      background: "rgba(200, 151, 62, 0.12)",
+                      border: "1px solid rgba(200, 151, 62, 0.35)",
+                      borderRadius: "14px",
+                      textAlign: "left",
+                      fontSize: "0.86rem",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.35rem" }}>
+                      <span style={{ color: "#eed699", fontWeight: 600 }}>Payment Method:</span>
+                      <strong style={{ color: "#ffffff" }}>
+                        {confirmedOrder.paymentMethod || "UPI (Verified)"}
+                      </strong>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.35rem" }}>
+                      <span style={{ color: "#eed699", fontWeight: 600 }}>Total Paid:</span>
+                      <strong style={{ color: "#ffffff" }}>
+                        ₹{Number(confirmedOrder.totalAmount).toLocaleString("en-IN")}
+                      </strong>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "#eed699", fontWeight: 600 }}>Status:</span>
+                      <strong style={{ color: "#4ade80" }}>
+                        {confirmedOrder.status} · {confirmedOrder.paymentStatus}
+                      </strong>
+                    </div>
+                  </div>
+                )}
+
                 <p>
-                  Thank you for choosing a slower kind of light. We’ve saved
-                  this as a demo order.
+                  Thank you for your order. We’ve recorded this order to your account
+                  and you can monitor fulfillment live in your Studio Dashboard.
                 </p>
-                <button
-                  className="button button-dark"
-                  onClick={() => {
-                    setCartOpen(false);
-                    setCart([]);
-                    setComplete(false);
-                  }}
-                >
-                  Back to the good stuff <ArrowRight size={16} />
-                </button>
+
+                <div style={{ display: "flex", gap: "0.75rem", flexDirection: "column", width: "100%", marginTop: "1rem" }}>
+                  <Link
+                    href="/dashboard"
+                    className="button button-dark"
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}
+                  >
+                    View Studio Dashboard <ArrowRight size={16} />
+                  </Link>
+                  <button
+                    className="button button-outline"
+                    style={{ width: "100%" }}
+                    onClick={() => {
+                      setCartOpen(false);
+                      setCart([]);
+                      setComplete(false);
+                      setConfirmedOrder(null);
+                    }}
+                  >
+                    Back to the good stuff
+                  </button>
+                </div>
               </div>
             ) : cart.length === 0 ? (
               <div className="empty-cart">
@@ -959,7 +1052,10 @@ function App() {
                   <p>Taxes included. Shipping calculated at checkout.</p>
                   <button
                     className="button button-dark checkout-button"
-                    onClick={() => setCheckoutStep(true)}
+                    onClick={() => {
+                      setCartOpen(false);
+                      router.push("/checkout");
+                    }}
                   >
                     Continue to checkout <ArrowRight size={17} />
                   </button>
@@ -992,11 +1088,74 @@ function App() {
             aria-labelledby="checkout-title"
             onSubmit={async (event) => {
               event.preventDefault();
+              setCheckoutError(null);
+              setIsProcessingPayment(true);
+
+              const phoneVal = validateIndianPhone(formPhone);
+              if (!phoneVal.valid) {
+                setCheckoutError(phoneVal.error || "Please enter a valid 10-digit Indian mobile number.");
+                setIsProcessingPayment(false);
+                return;
+              }
+              if (!formState) {
+                setCheckoutError("Please select your State / Union Territory.");
+                setIsProcessingPayment(false);
+                return;
+              }
+              if (!formCity) {
+                setCheckoutError("Please select your City / District.");
+                setIsProcessingPayment(false);
+                return;
+              }
+              const pinVal = validateIndianPin(formPin, formState);
+              if (!pinVal.valid) {
+                setCheckoutError(pinVal.error || "Please enter a valid 6-digit Indian PIN code.");
+                setIsProcessingPayment(false);
+                return;
+              }
+              const addrVal = validateIndianStreetAddress(formStreet);
+              if (!addrVal.valid) {
+                setCheckoutError(addrVal.error || "Please provide a complete delivery street address.");
+                setIsProcessingPayment(false);
+                return;
+              }
+
               const shippingAddress = `${formStreet}, ${formCity}, ${formState} - ${formPin}`;
-              const orderTotal = subtotal + (subtotal >= 1800 ? 0 : 80);
 
               try {
-                await fetch("/api/orders", {
+                if (formPayment === "Cash on Delivery" || formPayment === "COD") {
+                  const res = await fetch("/api/orders", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      customerName: formName || "Guest",
+                      customerEmail: formEmail || "guest@example.com",
+                      customerPhone: formPhone || "+91",
+                      shippingAddress,
+                      paymentMethod: "Cash on Delivery",
+                      paymentStatus: "PENDING",
+                      totalAmount: subtotal + (subtotal >= 1800 ? 0 : 80),
+                      items: cart.map((c) => ({
+                        productId: c.id,
+                        name: c.name,
+                        details: c.details,
+                        quantity: c.quantity,
+                        price: c.price,
+                        image: c.image,
+                      })),
+                    }),
+                  });
+
+                  const data = await res.json();
+                  if (!res.ok || !data.success) {
+                    throw new Error(data.error || "Failed to place Cash on Delivery order.");
+                  }
+
+                  handlePaymentSuccess(data.order);
+                  return;
+                }
+
+                const res = await fetch("/api/payments/razorpay/create-order", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
@@ -1004,25 +1163,90 @@ function App() {
                     customerEmail: formEmail || "guest@example.com",
                     customerPhone: formPhone || "+91",
                     shippingAddress,
-                    paymentMethod: formPayment,
-                    totalAmount: orderTotal,
                     items: cart.map((c) => ({
                       productId: c.id,
+                      id: c.id,
                       name: c.name,
                       details: c.details,
-                      price: c.price,
                       quantity: c.quantity,
                       image: c.image,
                     })),
                   }),
                 });
-              } catch (err) {
-                console.error("Order save error", err);
-              }
 
-              setComplete(true);
-              setCheckoutStep(false);
-              setCartOpen(true);
+                const data = await res.json();
+                if (!res.ok) {
+                  throw new Error(data.error || "Failed to create order.");
+                }
+
+                if (data.mode === "sandbox") {
+                  setUpiOrderData({
+                    orderNumber: data.orderNumber,
+                    razorpayOrderId: data.razorpayOrderId,
+                    amount: data.amount,
+                    paymentExpiresAt: data.paymentExpiresAt,
+                    customerName: formName || "Guest",
+                  });
+                  setCheckoutStep(false);
+                  setUpiModalOpen(true);
+                } else {
+                  // Official Razorpay Checkout Flow (Live / Test)
+                  const loaded = await loadRazorpayScript();
+                  if (!loaded) {
+                    throw new Error("Could not load Razorpay payment SDK.");
+                  }
+
+                  const options = {
+                    key: data.keyId,
+                    amount: data.amountInPaise,
+                    currency: "INR",
+                    name: "Lizardfy Atelier",
+                    description: `Order ${data.orderNumber}`,
+                    order_id: data.razorpayOrderId,
+                    prefill: {
+                      name: formName || "Guest",
+                      email: formEmail || "guest@example.com",
+                      contact: formPhone || "+91",
+                    },
+                    theme: {
+                      color: "#182319",
+                    },
+                    handler: async (response: any) => {
+                      try {
+                        const verifyRes = await fetch("/api/payments/razorpay/verify", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                          }),
+                        });
+                        const verifyData = await verifyRes.json();
+                        if (!verifyRes.ok) {
+                          throw new Error(verifyData.error || "Payment verification failed.");
+                        }
+                        handlePaymentSuccess(verifyData.order);
+                      } catch (vErr: any) {
+                        alert(vErr.message || "Payment verification failed.");
+                      }
+                    },
+                    modal: {
+                      ondismiss: () => {
+                        setIsProcessingPayment(false);
+                      },
+                    },
+                  };
+
+                  const rzp = new (window as any).Razorpay(options);
+                  rzp.open();
+                }
+              } catch (err: any) {
+                console.error("Order payment error:", err);
+                setCheckoutError(err.message || "Could not process order.");
+              } finally {
+                setIsProcessingPayment(false);
+              }
             }}
           >
             <button
@@ -1082,34 +1306,66 @@ function App() {
                   onChange={(e) => setFormPin(e.target.value)}
                 />
               </label>
+              <label>
+                State / Union Territory *
+                <select
+                  required
+                  value={formState}
+                  onChange={(e) => {
+                    setFormState(e.target.value);
+                    setFormCity("");
+                  }}
+                  style={{
+                    width: "100%",
+                    height: "37px",
+                    padding: "0 9px",
+                    border: "1px solid #d8dbd1",
+                    background: "#fffef9",
+                    color: "var(--ink)",
+                    fontSize: "9px",
+                  }}
+                >
+                  <option value="">Select State (All 36 in India)</option>
+                  {allIndianStates.map((st) => (
+                    <option key={st} value={st}>
+                      {st}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                City / District *
+                <select
+                  required
+                  disabled={!formState}
+                  value={formCity}
+                  onChange={(e) => setFormCity(e.target.value)}
+                  style={{
+                    width: "100%",
+                    height: "37px",
+                    padding: "0 9px",
+                    border: "1px solid #d8dbd1",
+                    background: formState ? "#fffef9" : "#f4f3ec",
+                    color: "var(--ink)",
+                    fontSize: "9px",
+                  }}
+                >
+                  <option value="">{formState ? "Select City / District" : "Select State first"}</option>
+                  {indianCitiesForState.map((ct) => (
+                    <option key={ct} value={ct}>
+                      {ct}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <label className="checkout-wide">
-                Delivery address
+                Delivery address (House/Flat, street & area) *
                 <input
                   autoComplete="street-address"
                   required
-                  placeholder="House, street and area"
+                  placeholder="House/Flat number, building, street, and area"
                   value={formStreet}
                   onChange={(e) => setFormStreet(e.target.value)}
-                />
-              </label>
-              <label>
-                City
-                <input
-                  autoComplete="address-level2"
-                  required
-                  placeholder="City"
-                  value={formCity}
-                  onChange={(e) => setFormCity(e.target.value)}
-                />
-              </label>
-              <label>
-                State
-                <input
-                  autoComplete="address-level1"
-                  required
-                  placeholder="State"
-                  value={formState}
-                  onChange={(e) => setFormState(e.target.value)}
                 />
               </label>
             </div>
@@ -1119,25 +1375,75 @@ function App() {
                 value={formPayment}
                 onChange={(e) => setFormPayment(e.target.value)}
               >
-                <option>Pay by UPI</option>
-                <option>Credit or debit card</option>
-                <option>Net banking</option>
+                <option value="Pay by UPI">Pay by UPI (Instant QR / Apps)</option>
+                <option value="Cash on Delivery">Cash on Delivery (Pay at Doorstep)</option>
               </select>
             </label>
+            <div style={{ marginTop: "0.8rem", textAlign: "center" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setCheckoutStep(false);
+                  router.push("/checkout");
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#eed699",
+                  fontSize: "0.8rem",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                Or open dedicated full-page checkout &rarr;
+              </button>
+            </div>
             <p className="checkout-demo-note">
               Order will be recorded to your account and displayed in your
               Studio Dashboard.
             </p>
+            {checkoutError && (
+              <p style={{ color: "#ff8585", fontSize: "0.85rem", marginTop: "0.5rem" }}>
+                {checkoutError}
+              </p>
+            )}
             <button
               type="submit"
+              disabled={isProcessingPayment}
               className="button button-dark checkout-button"
             >
-              Place order · ₹
-              {(subtotal + (subtotal >= 1800 ? 0 : 80)).toLocaleString("en-IN")}{" "}
-              <ArrowRight size={16} />
+              {isProcessingPayment ? (
+                "Processing order..."
+              ) : formPayment === "Cash on Delivery" ? (
+                <>
+                  Place Order (Cash on Delivery) · ₹
+                  {(subtotal + (subtotal >= 1800 ? 0 : 80)).toLocaleString("en-IN")}{" "}
+                  <ArrowRight size={16} />
+                </>
+              ) : (
+                <>
+                  Pay by UPI · ₹
+                  {(subtotal + (subtotal >= 1800 ? 0 : 80)).toLocaleString("en-IN")}{" "}
+                  <ArrowRight size={16} />
+                </>
+              )}
             </button>
           </form>
         </div>
+      )}
+
+      {/* Luxury UPI Payment Simulator Modal */}
+      {upiOrderData && (
+        <UpiPaymentModal
+          isOpen={upiModalOpen}
+          orderNumber={upiOrderData.orderNumber}
+          razorpayOrderId={upiOrderData.razorpayOrderId}
+          amount={upiOrderData.amount}
+          paymentExpiresAt={upiOrderData.paymentExpiresAt}
+          customerName={upiOrderData.customerName}
+          onSuccess={handlePaymentSuccess}
+          onClose={() => setUpiModalOpen(false)}
+        />
       )}
     </>
   );

@@ -453,7 +453,7 @@ export default function SingleProductPage({
                     </strong>
                   </div>
                   <Link
-                    href="/#shop"
+                    href="/checkout"
                     onClick={() => setCartOpen(false)}
                     className="button button-dark checkout-button"
                   >
