@@ -18,6 +18,7 @@ import {
   SlidersHorizontal,
   Sparkles,
   Trash2,
+  User,
   X,
 } from "lucide-react";
 
@@ -116,6 +117,35 @@ function App() {
   const [complete, setComplete] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState(false);
   const [sort, setSort] = useState("Featured");
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  } | null>(null);
+
+  // Checkout form fields
+  const [formName, setFormName] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [formPhone, setFormPhone] = useState("+91 ");
+  const [formStreet, setFormStreet] = useState("");
+  const [formCity, setFormCity] = useState("");
+  const [formState, setFormState] = useState("");
+  const [formPin, setFormPin] = useState("");
+  const [formPayment, setFormPayment] = useState("Pay by UPI");
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.user) {
+          setCurrentUser(data.user);
+          setFormName(data.user.name || "");
+          setFormEmail(data.user.email || "");
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     try {
@@ -248,6 +278,21 @@ function App() {
             <span>Bag</span>
             <b>{count}</b>
           </button>
+          {currentUser ? (
+            <Link
+              href={currentUser.role === "ADMIN" ? "/dashboard/admin" : "/dashboard"}
+              className="user-auth-btn"
+              title="Open your studio account"
+            >
+              <User size={13} />
+              <span>{currentUser.role === "ADMIN" ? "Admin" : currentUser.name.split(" ")[0]}</span>
+            </Link>
+          ) : (
+            <Link href="/login" className="user-auth-btn" title="Sign in or register">
+              <User size={13} />
+              <span>Sign in</span>
+            </Link>
+          )}
         </div>
       </header>
 
@@ -1087,8 +1132,36 @@ function App() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="checkout-title"
-            onSubmit={(event) => {
+            onSubmit={async (event) => {
               event.preventDefault();
+              const shippingAddress = `${formStreet}, ${formCity}, ${formState} - ${formPin}`;
+              const orderTotal = subtotal + (subtotal >= 1800 ? 0 : 80);
+
+              try {
+                await fetch("/api/orders", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    customerName: formName || "Guest",
+                    customerEmail: formEmail || "guest@example.com",
+                    customerPhone: formPhone || "+91",
+                    shippingAddress,
+                    paymentMethod: formPayment,
+                    totalAmount: orderTotal,
+                    items: cart.map((c) => ({
+                      productId: c.id,
+                      name: c.name,
+                      details: c.details,
+                      price: c.price,
+                      quantity: c.quantity,
+                      image: c.image,
+                    })),
+                  }),
+                });
+              } catch (err) {
+                console.error("Order save error", err);
+              }
+
               setComplete(true);
               setCheckoutStep(false);
               setCartOpen(true);
@@ -1109,7 +1182,13 @@ function App() {
             <div className="checkout-grid">
               <label>
                 Full name
-                <input autoComplete="name" required placeholder="Your name" />
+                <input
+                  autoComplete="name"
+                  required
+                  placeholder="Your name"
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                />
               </label>
               <label>
                 Email address
@@ -1118,6 +1197,8 @@ function App() {
                   type="email"
                   required
                   placeholder="you@example.com"
+                  value={formEmail}
+                  onChange={(e) => setFormEmail(e.target.value)}
                 />
               </label>
               <label>
@@ -1127,6 +1208,8 @@ function App() {
                   type="tel"
                   required
                   placeholder="+91"
+                  value={formPhone}
+                  onChange={(e) => setFormPhone(e.target.value)}
                 />
               </label>
               <label>
@@ -1137,6 +1220,8 @@ function App() {
                   required
                   pattern="[0-9]{6}"
                   placeholder="6-digit PIN"
+                  value={formPin}
+                  onChange={(e) => setFormPin(e.target.value)}
                 />
               </label>
               <label className="checkout-wide">
@@ -1145,6 +1230,8 @@ function App() {
                   autoComplete="street-address"
                   required
                   placeholder="House, street and area"
+                  value={formStreet}
+                  onChange={(e) => setFormStreet(e.target.value)}
                 />
               </label>
               <label>
@@ -1153,6 +1240,8 @@ function App() {
                   autoComplete="address-level2"
                   required
                   placeholder="City"
+                  value={formCity}
+                  onChange={(e) => setFormCity(e.target.value)}
                 />
               </label>
               <label>
@@ -1161,26 +1250,31 @@ function App() {
                   autoComplete="address-level1"
                   required
                   placeholder="State"
+                  value={formState}
+                  onChange={(e) => setFormState(e.target.value)}
                 />
               </label>
             </div>
             <label className="payment-choice">
               Payment preference
-              <select>
+              <select
+                value={formPayment}
+                onChange={(e) => setFormPayment(e.target.value)}
+              >
                 <option>Pay by UPI</option>
                 <option>Credit or debit card</option>
                 <option>Net banking</option>
               </select>
             </label>
             <p className="checkout-demo-note">
-              Demo checkout only. No payment is collected and no order is sent
-              to a fulfilment service.
+              Order will be recorded to your account and displayed in your
+              Studio Dashboard.
             </p>
             <button
               type="submit"
               className="button button-dark checkout-button"
             >
-              Place demo order · ₹
+              Place order · ₹
               {(subtotal + (subtotal >= 1800 ? 0 : 80)).toLocaleString("en-IN")}{" "}
               <ArrowRight size={16} />
             </button>

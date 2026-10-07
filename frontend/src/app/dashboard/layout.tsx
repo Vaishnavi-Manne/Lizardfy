@@ -1,0 +1,176 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  Compass,
+  LogOut,
+  MapPin,
+  Package,
+  Settings,
+  ShieldAlert,
+  Sparkles,
+  Store,
+} from "lucide-react";
+
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: "CUSTOMER" | "ADMIN";
+  avatar?: string | null;
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const res = await fetch("/api/auth/me");
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          setUser(data.user);
+        } else {
+          router.push("/login");
+        }
+      } catch {
+        router.push("/login");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadUser();
+  }, [router]);
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
+  };
+
+  const navItems = [
+    { label: "Overview", href: "/dashboard", icon: Compass },
+    { label: "My Orders", href: "/dashboard/orders", icon: Package },
+    { label: "Addresses", href: "/dashboard/addresses", icon: MapPin },
+    { label: "Account", href: "/dashboard/settings", icon: Settings },
+  ];
+
+  if (loading) {
+    return (
+      <div className="dashboard-loading">
+        <div className="loading-spinner" />
+        <p>Opening your studio dashboard...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="dashboard-shell">
+      <header className="dashboard-topbar">
+        <div className="dashboard-brand-wrap">
+          <Link href="/" className="wordmark">
+            <span className="brand-mark">
+              L<span>.</span>
+            </span>
+            <span className="brand-name">lizardfy</span>
+          </Link>
+          <span className="dashboard-tag">Customer Portal</span>
+        </div>
+
+        <div className="dashboard-top-actions">
+          {user?.role === "ADMIN" && (
+            <Link href="/dashboard/admin" className="admin-switch-pill">
+              <ShieldAlert size={14} /> Admin Studio
+            </Link>
+          )}
+
+          <Link href="/" className="topbar-store-link">
+            <Store size={15} /> Storefront
+          </Link>
+
+          <div className="user-badge">
+            {user?.avatar ? (
+              <img src={user.avatar} alt={user.name} className="user-avatar-img" />
+            ) : (
+              <div className="user-avatar">{user?.name ? user.name.charAt(0) : "U"}</div>
+            )}
+            <div className="user-details">
+              <strong>{user?.name}</strong>
+              <small>{user?.email}</small>
+            </div>
+          </div>
+
+          <button onClick={handleLogout} className="dashboard-logout-btn" title="Sign out">
+            <LogOut size={16} />
+            <span>Sign out</span>
+          </button>
+        </div>
+      </header>
+
+      <div className="dashboard-container">
+        <aside className="dashboard-sidebar">
+          <div className="sidebar-profile-card">
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="user-avatar-img"
+                style={{ width: "36px", height: "36px" }}
+              />
+            ) : (
+              <div className="profile-initial">{user?.name?.charAt(0) || "L"}</div>
+            )}
+            <div>
+              <h3>{user?.name}</h3>
+              <span>{user?.role === "ADMIN" ? "Studio Administrator" : "Candle Enthusiast"}</span>
+            </div>
+          </div>
+
+          <nav className="dashboard-nav">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={isActive ? "dashboard-nav-item active" : "dashboard-nav-item"}
+                >
+                  <Icon size={18} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+
+            {user?.role === "ADMIN" && (
+              <Link href="/dashboard/admin" className="dashboard-nav-item admin-link">
+                <ShieldAlert size={18} />
+                <span>Switch to Admin</span>
+              </Link>
+            )}
+          </nav>
+
+          <div className="sidebar-studio-cta">
+            <Sparkles size={18} />
+            <h4>Need a bespoke scent?</h4>
+            <p>Blend your own custom notes in our studio.</p>
+            <Link href="/#customize" className="button button-cream">
+              Build a candle
+            </Link>
+          </div>
+        </aside>
+
+        <main className="dashboard-main-content">{children}</main>
+      </div>
+    </div>
+  );
+}
