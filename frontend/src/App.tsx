@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowDown,
@@ -238,7 +239,7 @@ function App() {
         <section className="shop-section section-wrap" id="shop">
           <div className="section-heading shop-heading">
             <div>
-              <span className="eyebrow">Scent for every sort of day</span>
+              <span className="eyebrow">A little light for every moment</span>
               <h2>
                 Find your <em>favourite.</em>
               </h2>
@@ -690,9 +691,9 @@ function App() {
               factory line. Just good ingredients, warm hands and a reason to
               pause.
             </p>
-            <button className="text-link" onClick={() => goTo("bulk")}>
+            <Link href="/our-story" className="text-link">
               A little more about us <ArrowRight size={16} />
-            </button>
+            </Link>
             <span className="signature">
               With warmth, <em>Team Lizardfy</em>
             </span>
